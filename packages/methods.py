@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-import requests
+import requests, json
 
 BASE_URL = "https://paper-api.alpaca.markets"
 HEADERS = {"APCA-API-KEY-ID":"PKXDRX4PECLPBUUBIRKD", "APCA-API-SECRET-KEY":"j4ZuyEsnJJcEsO1XIbTnPlIp5HaZVVTDD0h8p8Tx"}
@@ -18,17 +18,35 @@ def findStocks():
         tickersList.append(ticker)
     return tickersList
 
+# Returns quantity of stock owned
+def checkPositionQty(ticker):
+    endpoint = "/v2/positions/"
+    url = BASE_URL + endpoint + ticker
+    r = requests.get(url, headers=HEADERS)
+    statusCode = r.status_code
+    response = json.loads(r.text)
+
+    if statusCode == 200:
+        return int(response['qty'])
+    else:
+        return 0   
+    
 # Buys selected quantity of selected stock
 def buyStock(ticker, qty):
     endpoint = "/v2/orders"
     url = BASE_URL + endpoint
     requests.post(url, headers=HEADERS, json={'symbol': ticker, 'qty': str(qty), 'side': 'buy', 'type': 'market', 'time_in_force': 'day'})
     print("BUY: " + str(qty) + " shares(s) of " + ticker)
-
+    
 # Sells selected quantity of selected stock
 def sellStock(ticker, qty):
+    # Check account owns enough of stock to sell
+    if qty > checkPositionQty(ticker):
+        print("ERROR: Insufficient qty of " + ticker + " to sell.")
+        return None
+    else:
+        endpoint = "/v2/orders"
+        url = BASE_URL + endpoint
+        requests.post(url, headers=HEADERS, json={'symbol': ticker, 'qty': str(qty), 'side': 'sell', 'type': 'market', 'time_in_force': 'day'})
+        print("SELL: " + str(qty) + " share(s) of " + ticker)
 
-    endpoint = "/v2/orders"
-    url = BASE_URL + endpoint
-    requests.post(url, headers=HEADERS, json={'symbol': ticker, 'qty': str(qty), 'side': 'sell', 'type': 'market', 'time_in_force': 'day'})
-    print("SELL: " + str(qty) + " share(s) of " + ticker)

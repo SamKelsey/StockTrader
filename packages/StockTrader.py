@@ -1,5 +1,3 @@
-from methods import findStocks, buyStock
+from methods import findStocks, buyStock, sellStock, checkPositionQty
 
-
-
-buyStock('AMZN', 1)
+sellStock("AMZN", 1)
