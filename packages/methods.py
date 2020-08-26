@@ -35,8 +35,13 @@ def checkPositionQty(ticker):
 def buyStock(ticker, qty):
     endpoint = "/v2/orders"
     url = BASE_URL + endpoint
-    requests.post(url, headers=HEADERS, json={'symbol': ticker, 'qty': str(qty), 'side': 'buy', 'type': 'market', 'time_in_force': 'day'})
-    print("BUY: " + str(qty) + " shares(s) of " + ticker)
+    r = requests.post(url, headers=HEADERS, json={'symbol': ticker, 'qty': str(qty), 'side': 'buy', 'type': 'market', 'time_in_force': 'day'})
+    # Check status code of order
+    if r.status_code == 403:
+        print("ERROR: Insufficient funds for purchase")
+        return None
+    elif r.status_code == 200: 
+        print("BUY: " + str(qty) + " shares(s) of " + ticker)
     
 # Sells selected quantity of selected stock
 def sellStock(ticker, qty):
@@ -47,6 +52,7 @@ def sellStock(ticker, qty):
     else:
         endpoint = "/v2/orders"
         url = BASE_URL + endpoint
-        requests.post(url, headers=HEADERS, json={'symbol': ticker, 'qty': str(qty), 'side': 'sell', 'type': 'market', 'time_in_force': 'day'})
-        print("SELL: " + str(qty) + " share(s) of " + ticker)
+        r = requests.post(url, headers=HEADERS, json={'symbol': ticker, 'qty': str(qty), 'side': 'sell', 'type': 'market', 'time_in_force': 'day'})
+        if r.status_code == 200:
+            print("SELL: " + str(qty) + " share(s) of " + ticker)
 
