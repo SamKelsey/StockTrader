@@ -1,3 +1,3 @@
-import packages as pkg
+from methods import findStocks
 
-print(pkg.methods.findStocks())
+findStocks()
