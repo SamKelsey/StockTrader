@@ -1,3 +1,5 @@
-from methods import findStocks
+from methods import findStocks, buyStock
 
-findStocks()
+
+
+buyStock('AMZN', 1)
