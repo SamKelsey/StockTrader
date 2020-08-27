@@ -56,3 +56,44 @@ def sellStock(ticker, qty):
         if r.status_code == 200:
             print("SELL: " + str(qty) + " share(s) of " + ticker)
 
+# Creates a watchlist with the given name, filled with the given list of tickers
+def createWatchlist(name, tickers):
+    endpoint = "/v2/watchlists"
+    url = BASE_URL + endpoint
+    r = requests.post(url, headers=HEADERS, json={"name": name, "symbols": tickers})
+    print(r)
+    print(r.text)
+
+# Returns !LIST! of watchlists, each in json
+def getWatchlists():
+    endpoint = "/v2/watchlists"
+    url = BASE_URL + endpoint
+    r = requests.get(url, headers=HEADERS)
+    return r
+
+# Returns list of tickers in Primary Watchlist
+def getWatchlistTickers():
+    endpoint = "/v2/watchlists/"
+    watchlistID = json.loads(getWatchlists().text)[0]['id']
+    url = BASE_URL + endpoint + watchlistID
+    r = requests.get(url, headers=HEADERS)
+    assets = json.loads(r.text)['assets']
+    tickersList = []
+    for asset in assets:
+        tickersList.append(asset['symbol'])
+    return tickersList
+
+# Adds a stock the primary watchlist and returns the response object
+def addToWatchlist(ticker):
+    endpoint = "/v2/watchlists/"
+    watchlistID = json.loads(getWatchlists().text)[0]['id']
+    url = BASE_URL + endpoint + watchlistID
+    requests.post(url, headers=HEADERS, json={"watchlist_id": watchlistID, "symbol":ticker})
+
+# Removes a stock from the primary watchlist and returns the response object
+def removeFromWatchlist(ticker):
+    endpoint = "/v2/watchlists/"
+    watchlistID = json.loads(getWatchlists().text)[0]['id']
+    url = BASE_URL + endpoint + watchlistID + "/" + ticker
+    r = requests.delete(url, headers=HEADERS)
+    print(r)

@@ -1,3 +1,5 @@
-from methods import findStocks, buyStock, sellStock, checkPositionQty
+from methods import findStocks, buyStock, sellStock, checkPositionQty, addToWatchlist, removeFromWatchlist, getWatchlistTickers
 
-sellStock("AMZN", 1)
+
+
+
