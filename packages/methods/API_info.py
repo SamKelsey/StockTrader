@@ -1,2 +1,0 @@
-BASE_URL = "https://paper-api.alpaca.markets"
-HEADERS = {"APCA-API-KEY-ID":"PKWJ9ORSHWKP42N2TYQT", "APCA-API-SECRET-KEY":"YENTo/nwj2tiX2oVnwINcLPIeKaPHThwE3dCfLgl"}
