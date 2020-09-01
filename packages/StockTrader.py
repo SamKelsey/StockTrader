@@ -1,7 +1,8 @@
 from Stock import Stock
-from methods import Alpaca_API_methods
+from methods import Alpaca_API_methods, data_methods
 
-print(Alpaca_API_methods.checkPositionQty('AMZN'))
+Alpaca_API_methods.findStocks()
+
 
 
 
