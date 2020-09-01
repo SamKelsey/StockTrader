@@ -1,7 +1,7 @@
 from Stock import Stock
-import methods
+from methods import Alpaca_API_methods
 
-
+Alpaca_API_methods.findStocks()
 
 
 

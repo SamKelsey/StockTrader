@@ -3,5 +3,5 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+/methods/API_info.py
 TODO.txt
-**./API_info.py
