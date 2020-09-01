@@ -1,20 +1,21 @@
 from bs4 import BeautifulSoup
 import requests, json
-from methods.API_info import HEADERS, BASE_URL
+from methods.API_info import HEADERS, BASE_URL, TIMEFRAME
 
-# Scrapes Yahoo Finance most active stocks
-# Returns list of most active stock tickers
-def findStocks():
-    link = "https://finance.yahoo.com/most-active/"
-    r = requests.get(url = link)
-    soup = BeautifulSoup(r.content, 'lxml')
-    tableRows = soup.find('table', {'class': 'W(100%)'}).find('tbody').find_all('tr')
-    tickersList = []
-
-    for row in tableRows:
-        ticker = row.find('td').find('a').text
-        tickersList.append(ticker)
-    return tickersList
+def getTickerInfo(tickers, qty):
+    BASE_URL = "https://data.alpaca.markets"
+    endpoint = "/v1/bars/"
+    url = BASE_URL + endpoint + TIMEFRAME
+    
+    # Convert ticker list to string format
+    tickerString = ""
+    for ticker in tickers:
+        tickerString += ticker
+        if ticker == tickers[-1]:
+            break
+        tickerString += ","
+    r = requests.get(url, headers=HEADERS, params={"symbols": tickerString, "limit": qty})
+    return r
 
 # Returns quantity of stock owned
 def checkPositionQty(ticker):

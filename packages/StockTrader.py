@@ -1,12 +1,7 @@
 from Stock import Stock
-from methods import Alpaca_API_methods, data_methods
+from methods import Alpaca_API_methods as API, data_methods as myData
 
-Alpaca_API_methods.findStocks()
-
-
-
-
-
+API.getTickerInfo(["AMZN", "TSLA"], 1)
 
 
 
