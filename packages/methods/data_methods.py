@@ -1,5 +1,7 @@
 from bs4 import BeautifulSoup
 import requests, json, pandas as pd
+from pathlib import Path
+
 
 # Returns list of most active stock tickers from Yahoo Finance
 def findStocks():
@@ -42,4 +44,14 @@ def createDF(r):
         dfDict[ticker] = df
 
     return dfDict
+
+# Accepts dictionary of dataframes and converts each to a csv named by ticker
+def createDataFiles(dfDict):
+    for ticker in dfDict:
+        df = dfDict[ticker]
+        cwd = "F:/Coding/Trading Bot"
+        relativePath = "/packages/methods/ticker_data/"
+        pathString = cwd + relativePath + ticker + ".csv"
+        path = Path(pathString)
+        df.to_csv(path)
 
