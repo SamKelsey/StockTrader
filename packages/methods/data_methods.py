@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
-import requests, json, pandas as pd
+import requests, json, pandas as pd, os
 from pathlib import Path
+from datetime import datetime
+from methods import Alpaca_API_methods as API 
 
 
 # Returns list of most active stock tickers from Yahoo Finance
@@ -32,6 +34,9 @@ def createDF(r):
         df.set_index('t', inplace=True)
         df.index.name = None
 
+        df['flagShort'] = False
+        df['flagLong'] = False
+
         # Rename columns
         df.rename(columns={
             'o':'Open',
@@ -49,9 +54,68 @@ def createDF(r):
 def createDataFiles(dfDict):
     for ticker in dfDict:
         df = dfDict[ticker]
-        cwd = "F:/Coding/Trading Bot"
+        cwd = os.getcwd()
         relativePath = "/packages/methods/ticker_data/"
         pathString = cwd + relativePath + ticker + ".csv"
         path = Path(pathString)
         df.to_csv(path)
 
+# Accepts list of tickers and updates the csv files
+def updateTickerData(tickers):
+    r = API.getTickerInfo(tickers, 1)
+    response = json.loads(r.content)
+    for ticker in response:
+        df = pd.DataFrame.from_dict(response[ticker])
+
+         # Convert time unit
+        df['t'] = pd.to_datetime(df['t'], unit='s')
+
+        # Set time as index and remove index name
+        df.set_index('t', inplace=True)
+        df.index.name = None
+
+        df['flagShort'] = False
+        df['flagLong'] = False
+
+        # Rename columns
+        df.rename(columns={
+            'o':'Open',
+            'h':'High',
+            'l':'Low',
+            'c':'Close',
+            'v':'Volume'
+            }, inplace=True)
+
+        # Read original csv
+        cwd = os.getcwd()
+        path = Path(cwd + "/packages/methods/ticker_data/" + ticker + ".csv")
+        dfOld = pd.read_csv(path, index_col=0)
+        
+        # Check for duplicate index's
+        indexString1 = str(df.index[0])
+        indexString2 = dfOld.index[-1]
+
+        if indexString1 == indexString2:
+            print("Duplicated Index")
+            continue
+
+        # Add new info to end 
+        dfNew = dfOld.append(df)
+
+        # Remove oldest info (first row)
+        dfNew = dfNew.iloc[1:,]
+
+        # Write to csv file under same name
+        dfNew.to_csv(path)
+            
+
+
+        
+
+
+    
+
+        
+
+
+    

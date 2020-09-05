@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests, json
 from methods.API_info import HEADERS, BASE_URL, TIMEFRAME
 
+# Accepts list of tickers. Returns response json object with "qty" number of data bars for provided tickers
 def getTickerInfo(tickers, qty):
     BASE_URL = "https://data.alpaca.markets"
     endpoint = "/v1/bars/"
