@@ -12,11 +12,10 @@ if dt.today().weekday() == 0: # Update watchlist every monday (TODO - Method of 
         else:
             API.addToWatchlist(ticker) # Add ticker to watchlist
 
-myData.updateTickerData(['AMZN', 'TSLA'])
-
+myData.updateTickerData(['AMZN'])
 
 # Update csv file info
-#myData.createDataFiles(myData.createDF(API.getTickerInfo(['AMZN', 'TSLA'], 3)))
+# myData.createDataFiles(myData.createDF(API.getTickerInfo(['AMZN', 'TSLA'], 3)))
 
 
 

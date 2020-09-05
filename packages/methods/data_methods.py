@@ -2,7 +2,8 @@ from bs4 import BeautifulSoup
 import requests, json, pandas as pd, os
 from pathlib import Path
 from datetime import datetime
-from methods import Alpaca_API_methods as API 
+from methods import Alpaca_API_methods as API
+from methods.API_info import LIMIT
 
 
 # Returns list of most active stock tickers from Yahoo Finance
@@ -46,6 +47,20 @@ def createDF(r):
             'v':'Volume'
             }, inplace=True)
 
+
+        # Calculate short, medium and long exponential moving averages
+        shortSpan = LIMIT/200 
+        middleSpan = LIMIT/10
+        longSpan = LIMIT/2
+        ShortEMA = df.Close.ewm(span=shortSpan, adjust=False).mean() # span=5 is the original
+        MiddleEMA = df.Close.ewm(span=middleSpan, adjust=False).mean() #span=21
+        LongEMA = df.Close.ewm(span=longSpan, adjust=False).mean() # span=63
+
+        # Add exponential moving averages to df
+        df['Short'] = ShortEMA
+        df['Middle'] = MiddleEMA
+        df['Long'] = LongEMA
+        
         dfDict[ticker] = df
 
     return dfDict
@@ -60,7 +75,7 @@ def createDataFiles(dfDict):
         path = Path(pathString)
         df.to_csv(path)
 
-# Accepts list of tickers and updates the csv files
+# Accepts list of tickers and updates the csv files with most recent info and removes most outdated info
 def updateTickerData(tickers):
     r = API.getTickerInfo(tickers, 1)
     response = json.loads(r.content)
@@ -96,7 +111,6 @@ def updateTickerData(tickers):
         indexString2 = dfOld.index[-1]
 
         if indexString1 == indexString2:
-            print("Duplicated Index")
             continue
 
         # Add new info to end 
@@ -105,6 +119,20 @@ def updateTickerData(tickers):
         # Remove oldest info (first row)
         dfNew = dfNew.iloc[1:,]
 
+        # Calculate short, medium and long exponential moving averages
+        shortSpan = LIMIT/200 
+        middleSpan = LIMIT/10
+        longSpan = LIMIT/2
+        ShortEMA = dfNew.Close.ewm(span=shortSpan, adjust=False).mean() # span=5 is the original
+        MiddleEMA = dfNew.Close.ewm(span=middleSpan, adjust=False).mean() #span=21
+        LongEMA = dfNew.Close.ewm(span=longSpan, adjust=False).mean() # span=63
+
+        # Add exponential moving averages to df
+        dfNew['Short'] = ShortEMA
+        dfNew['Middle'] = MiddleEMA
+        dfNew['Long'] = LongEMA
+
+        print(dfNew)
         # Write to csv file under same name
         dfNew.to_csv(path)
             
