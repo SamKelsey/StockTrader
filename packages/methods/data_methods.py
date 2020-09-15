@@ -8,21 +8,57 @@ from datetime import datetime
 from methods import Alpaca_API_methods as API
 from methods.API_info import LIMIT
 
+# Accepts dictionary of dataframes and converts each to a csv named by ticker
+
+
+def createDataFiles(dfDict):
+    for ticker in dfDict:
+        df = dfDict[ticker]
+        cwd = os.getcwd()
+        relativePath = "/packages/methods/ticker_data/"
+        pathString = cwd + relativePath + ticker + ".csv"
+        path = Path(pathString)
+        df.to_csv(path)
+
 
 # Determines to buy or sell for a specified row index of a ticker df
 # Accepts a ticker, df and df index. Returns 1->Buy, 2->Sell, 0->No action
 def buyOrSell(ticker, df, i):
     if df['Middle'].iloc[i] < df['Long'].iloc[i] and df['Short'].iloc[i] < df['Middle'].iloc[i] and df['LongChange'].iloc[i] > 0 and df['flagLong'].iloc[i] == False and df['flagShort'].iloc[i] == False:
+        # Update flag value
         df['flagShort'].iloc[i] = True
+
+        # Update df to csv file
+        dfDict = {ticker: df}
+        createDataFiles(dfDict)
+
         return 1  # BUY
     elif df['flagShort'].iloc[i] == True and df['Short'].iloc[i] > df['Middle'].iloc[i]:
+        # Update flag value
         df['flagShort'].iloc[i] = False
+
+        # Update df to csv file
+        dfDict = {ticker: df}
+        createDataFiles(dfDict)
+
         return 2  # SELL
     elif df['Middle'].iloc[i] > df['Long'].iloc[i] and df['Short'].iloc[i] > df['Middle'].iloc[i] and df['flagLong'].iloc[i] == False and df['flagShort'].iloc[i] == False:
+        # Update flag value
         df['flagLong'].iloc[i] = True
+
+        # Update df to csv file
+        dfDict = {ticker: df}
+        createDataFiles(dfDict)
+
         return 1  # BUY
     elif df['flagLong'].iloc[i] == True and df['Short'].iloc[i] < df['Middle'].iloc[i]:
+        # Update flag value
         df['flagLong'].iloc[i] = False
+
+        # Update df to csv file
+        dfDict = {ticker: df}
+        createDataFiles(dfDict)
+
         return 2  # SELL
     else:
         # Carry forward previous flag if no action is required
@@ -32,6 +68,10 @@ def buyOrSell(ticker, df, i):
         else:  # If it's the first index just set it to false
             df['flagLong'] = False
             df['flagShort'] = False
+
+        # Update df to csv file
+        dfDict = {ticker: df}
+        createDataFiles(dfDict)
 
         return 0  # NO ACTION
 
@@ -102,17 +142,6 @@ def createDF(r):
 
     return dfDict
 
-# Accepts dictionary of dataframes and converts each to a csv named by ticker
-
-
-def createDataFiles(dfDict):
-    for ticker in dfDict:
-        df = dfDict[ticker]
-        cwd = os.getcwd()
-        relativePath = "/packages/methods/ticker_data/"
-        pathString = cwd + relativePath + ticker + ".csv"
-        path = Path(pathString)
-        df.to_csv(path)
 
 # Accepts list of tickers and updates the csv files with most recent info and removes most outdated info
 
@@ -130,9 +159,6 @@ def updateTickerData(tickers):
         df.set_index('t', inplace=True)
         df.index.name = None
 
-        df['flagShort'] = False
-        df['flagLong'] = False
-
         # Rename columns
         df.rename(columns={
             'o': 'Open',
@@ -146,6 +172,9 @@ def updateTickerData(tickers):
         cwd = os.getcwd()
         path = Path(cwd + "/packages/methods/ticker_data/" + ticker + ".csv")
         dfOld = pd.read_csv(path, index_col=0)
+
+        df['flagShort'] = dfOld['flagShort'].iloc[-1]
+        df['flagLong'] = dfOld['flagLong'].iloc[-1]
 
         # Check for duplicate index's
         indexString1 = str(df.index[0])
@@ -175,7 +204,7 @@ def updateTickerData(tickers):
         dfNew['Short'] = ShortEMA
         dfNew['Middle'] = MiddleEMA
         dfNew['Long'] = LongEMA
-        df['LongChange'] = df['Long'].pct_change()
+        dfNew['LongChange'] = dfNew['Long'].pct_change()
 
         # Write to csv file under same name
         dfNew.to_csv(path)

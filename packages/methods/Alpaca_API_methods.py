@@ -1,13 +1,16 @@
 from bs4 import BeautifulSoup
-import requests, json
+import requests
+import json
 from methods.API_info import HEADERS, BASE_URL, TIMEFRAME
 
 # Accepts list of tickers. Returns response json object with "qty" number of data bars for provided tickers
+
+
 def getTickerInfo(tickers, qty):
     BASE_URL = "https://data.alpaca.markets"
     endpoint = "/v1/bars/"
     url = BASE_URL + endpoint + TIMEFRAME
-    
+
     # Convert ticker list to string format
     tickerString = ""
     for ticker in tickers:
@@ -15,10 +18,13 @@ def getTickerInfo(tickers, qty):
         if ticker == tickers[-1]:
             break
         tickerString += ","
-    r = requests.get(url, headers=HEADERS, params={"symbols": tickerString, "limit": qty})
+    r = requests.get(url, headers=HEADERS, params={
+                     "symbols": tickerString, "limit": qty})
     return r
 
 # Returns quantity of stock owned
+
+
 def checkPositionQty(ticker):
     endpoint = "/v2/positions/"
     url = BASE_URL + endpoint + ticker
@@ -29,21 +35,26 @@ def checkPositionQty(ticker):
     if statusCode == 200:
         return int(response['qty'])
     else:
-        return 0   
-    
+        return 0
+
 # Buys selected quantity of selected stock
+
+
 def buyStock(ticker, qty):
     endpoint = "/v2/orders"
     url = BASE_URL + endpoint
-    r = requests.post(url, headers=HEADERS, json={'symbol': ticker, 'qty': str(qty), 'side': 'buy', 'type': 'market', 'time_in_force': 'day'})
+    r = requests.post(url, headers=HEADERS, json={'symbol': ticker, 'qty': str(
+        qty), 'side': 'buy', 'type': 'market', 'time_in_force': 'day'})
     # Check status code of order
     if r.status_code == 403:
         print("ERROR: Insufficient funds for purchase")
         return None
-    elif r.status_code == 200: 
+    elif r.status_code == 200:
         print("BUY: " + str(qty) + " shares(s) of " + ticker)
-    
+
 # Sells selected quantity of selected stock
+
+
 def sellStock(ticker, qty):
     # Check account owns enough of stock to sell
     if qty > checkPositionQty(ticker):
@@ -52,19 +63,25 @@ def sellStock(ticker, qty):
     else:
         endpoint = "/v2/orders"
         url = BASE_URL + endpoint
-        r = requests.post(url, headers=HEADERS, json={'symbol': ticker, 'qty': str(qty), 'side': 'sell', 'type': 'market', 'time_in_force': 'day'})
+        r = requests.post(url, headers=HEADERS, json={'symbol': ticker, 'qty': str(
+            qty), 'side': 'sell', 'type': 'market', 'time_in_force': 'day'})
         if r.status_code == 200:
             print("SELL: " + str(qty) + " share(s) of " + ticker)
 
 # Creates a watchlist with the given name, filled with the given list of tickers
+
+
 def createWatchlist(name, tickers):
     endpoint = "/v2/watchlists"
     url = BASE_URL + endpoint
-    r = requests.post(url, headers=HEADERS, json={"name": name, "symbols": tickers})
+    r = requests.post(url, headers=HEADERS, json={
+                      "name": name, "symbols": tickers})
     print(r)
     print(r.text)
 
 # Returns !LIST! of watchlists, each in json
+
+
 def getWatchlists():
     endpoint = "/v2/watchlists"
     url = BASE_URL + endpoint
@@ -72,6 +89,8 @@ def getWatchlists():
     return r
 
 # Returns list of tickers in Primary Watchlist
+
+
 def getWatchlistTickers():
     endpoint = "/v2/watchlists/"
     watchlistID = json.loads(getWatchlists().text)[0]['id']
@@ -84,16 +103,20 @@ def getWatchlistTickers():
     return tickersList
 
 # Adds a stock the primary watchlist and returns the response object
+
+
 def addToWatchlist(ticker):
     endpoint = "/v2/watchlists/"
     watchlistID = json.loads(getWatchlists().text)[0]['id']
     url = BASE_URL + endpoint + watchlistID
-    requests.post(url, headers=HEADERS, json={"watchlist_id": watchlistID, "symbol":ticker})
+    requests.post(url, headers=HEADERS, json={
+                  "watchlist_id": watchlistID, "symbol": ticker})
 
 # Removes a stock from the primary watchlist and returns the response object
+
+
 def removeFromWatchlist(ticker):
     endpoint = "/v2/watchlists/"
     watchlistID = json.loads(getWatchlists().text)[0]['id']
     url = BASE_URL + endpoint + watchlistID + "/" + ticker
     r = requests.delete(url, headers=HEADERS)
-    print(r)
