@@ -43,6 +43,8 @@ if dt.datetime.today().weekday() == 0:
 
 # List of tickers to watch & minute interval between checks
 tickers = API.getWatchlistTickers()
+
+# Interval between data checks
 INTERVAL = 5
 
 timeNow = dt.datetime.now().time()  # Current time
