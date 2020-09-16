@@ -4,6 +4,7 @@ from pathlib import Path
 import pandas as pd
 import os
 import time
+import math
 
 cwd = os.getcwd()  # Current Working Directory
 
@@ -41,9 +42,8 @@ if dt.datetime.today().weekday() == 0:
     myData.createDataFiles(dfDict)
 
 # Example list of tickers and quantity to buy/sell each time
-tickers = ['AMZN', 'TSLA']
-QTY = 1
-INTERVAL = 1
+tickers = API.getWatchlistTickers()
+INTERVAL = 5
 
 timeNow = dt.datetime.now().time()  # Current time
 timeOpen = dt.time(14, 30, 00)  # NASDAQ Open time
@@ -63,6 +63,8 @@ while (timeNow > timeOpen) and (timeNow < timeClose):
         pathString = cwd + relativePath + ticker + ".csv"
         path = Path(pathString)
         tickerDf = pd.read_csv(path)
+
+        QTY = math.ceil(500 / tickerDf['Close'].iloc[-1])
 
         # Determine whether to buy/sell latest index row of ticker df
         result = myData.buyOrSell(ticker, tickerDf, -1)
