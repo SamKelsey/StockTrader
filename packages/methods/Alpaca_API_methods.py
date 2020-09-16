@@ -56,10 +56,16 @@ def buyStock(ticker, qty):
 
 
 def sellStock(ticker, qty):
-    # Check account owns enough of stock to sell
-    if qty > checkPositionQty(ticker):
-        print("ERROR: Insufficient qty of " + ticker + " to sell.")
-        return None
+    qtyOwned = checkPositionQty(ticker)  # Qty of ticker owned
+
+    # Check account owns enough of stock to sell. If not, sell as much of the stock as is owned.
+    if qty > qtyOwned and qtyOwned > 0:
+        endpoint = "/v2/orders"
+        url = BASE_URL + endpoint
+        r = requests.post(url, headers=HEADERS, json={'symbol': ticker, 'qty': str(
+            qtyOwned), 'side': 'sell', 'type': 'market', 'time_in_force': 'day'})
+        if r.status_code == 200:
+            print("SELL: ALL (" + str(qtyOwned) + ") share(s) of " + ticker)
     else:
         endpoint = "/v2/orders"
         url = BASE_URL + endpoint

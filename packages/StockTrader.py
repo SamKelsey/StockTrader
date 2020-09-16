@@ -41,7 +41,7 @@ if dt.datetime.today().weekday() == 0:
     # Write df's to individual ticker csv files in ticker_data folder
     myData.createDataFiles(dfDict)
 
-# Example list of tickers and quantity to buy/sell each time
+# List of tickers to watch & minute interval between checks
 tickers = API.getWatchlistTickers()
 INTERVAL = 5
 
