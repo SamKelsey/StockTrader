@@ -32,14 +32,17 @@ if dt.datetime.today().weekday() == 0:
             path = Path(pathString)
             os.remove(path)
 
-    # Perform GET request for new tickers
-    response = API.getTickerInfo(newTickers, 10)
+    # Check there are new tickers to be added
+    if len(newTickers) > 0:
+        # Perform GET request for new tickers
+        response = API.getTickerInfo(newTickers, 1000)
 
-    # Convert GET response into dictionary of df's
-    dfDict = myData.createDF(response)
+        if response.status_code == 200:
+            # Convert GET response into dictionary of df's
+            dfDict = myData.createDF(response)
 
-    # Write df's to individual ticker csv files in ticker_data folder
-    myData.createDataFiles(dfDict)
+            # Write df's to individual ticker csv files in ticker_data folder
+            myData.createDataFiles(dfDict)
 
 # List of tickers to watch & minute interval between checks
 tickers = API.getWatchlistTickers()
@@ -49,7 +52,7 @@ INTERVAL = 5
 
 timeNow = dt.datetime.now().time()  # Current time
 timeOpen = dt.time(14, 30, 00)  # NASDAQ Open time
-timeClose = dt.time(22, 00, 00)  # NASDAQ Close time
+timeClose = dt.time(21, 00, 00)  # NASDAQ Close time
 
 while (timeNow > timeOpen) and (timeNow < timeClose):
     print("running...")
@@ -64,7 +67,7 @@ while (timeNow > timeOpen) and (timeNow < timeClose):
         relativePath = "/packages/methods/ticker_data/"
         pathString = cwd + relativePath + ticker + ".csv"
         path = Path(pathString)
-        tickerDf = pd.read_csv(path)
+        tickerDf = pd.read_csv(path, index_col=0)
 
         QTY = math.ceil(500 / tickerDf['Close'].iloc[-1])
 
