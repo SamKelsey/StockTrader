@@ -60,14 +60,9 @@ def buyOrSell(ticker, df, i):
         createDataFiles(dfDict)
 
         return 2  # SELL
-    else:
-        # Carry forward previous flag if no action is required
-        if i != 0:
-            df['flagLong'].iloc[i] = df['flagLong'].iloc[i-1]
-            df['flagShort'].iloc[i] = df['flagShort'].iloc[i-1]
-        else:  # If it's the first index just set it to false
-            df['flagLong'] = False
-            df['flagShort'] = False
+    elif i == 0:  # If it's the first index just set it to false
+        df['flagLong'] = False
+        df['flagShort'] = False
 
         # Update df to csv file
         dfDict = {ticker: df}
@@ -147,6 +142,7 @@ def createDF(r):
 
 
 def updateTickerData(tickers):
+
     r = API.getTickerInfo(tickers, 1)
     response = json.loads(r.content)
     for ticker in response:

@@ -9,7 +9,7 @@ import math
 cwd = os.getcwd()  # Current Working Directory
 
 # Update Alpaca Watchlist and ticker .csv files every Monday
-if dt.datetime.today().weekday() == 0:
+if dt.datetime.today().weekday() == 2:
     # Get most volatile stocks and add them to Alpaca watchlist
     tickers = myData.findStocks()
     watchlistTickers = API.getWatchlistTickers()
@@ -44,15 +44,35 @@ if dt.datetime.today().weekday() == 0:
             # Write df's to individual ticker csv files in ticker_data folder
             myData.createDataFiles(dfDict)
 
+    # Check no stock is already owned of new tickers.
+    # If so, set flagLong to True in csv file
+    for ticker in newTickers:
+        if API.checkPositionQty(ticker) > 0:  # Check qty of ticker owned
+            # Open tickers csv into a df
+            relativePath = "/packages/methods/ticker_data/"
+            pathString = cwd + relativePath + ticker + ".csv"
+            path = Path(pathString)
+            df = pd.read_csv(path, index_col=0)
+
+            # Set latest flagLong to true
+            df['flagLong'].iloc[-1] = True
+            print(df['flagLong'].iloc[-1])
+            print("Qty: " + str(API.checkPositionQty(ticker)))
+
+            # Re-write to csv file
+            df.to_csv(path)
+
+
 # List of tickers to watch & minute interval between checks
 tickers = API.getWatchlistTickers()
+print("Today's Watchlist: " + str(tickers))
 
 # Interval between data checks
 INTERVAL = 5
 
 timeNow = dt.datetime.now().time()  # Current time
 timeOpen = dt.time(14, 30, 00)  # NASDAQ Open time
-timeClose = dt.time(21, 00, 00)  # NASDAQ Close time
+timeClose = dt.time(21, 30, 00)  # NASDAQ Close time
 
 while (timeNow > timeOpen) and (timeNow < timeClose):
     print("running...")
@@ -73,7 +93,8 @@ while (timeNow > timeOpen) and (timeNow < timeClose):
 
         # Determine whether to buy/sell latest index row of ticker df
         result = myData.buyOrSell(ticker, tickerDf, -1)
-        if result == 1:  # Buy stocks of ticker
+        # Buy stocks of ticker if none already owned
+        if result == 1 and API.checkPositionQty(ticker) == 0:
             API.buyStock(ticker, QTY)
         elif result == 2:  # Sell stocks of ticker
             API.sellStock(ticker, QTY)
